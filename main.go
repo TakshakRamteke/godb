@@ -27,6 +27,7 @@ func readConsole(inputBuffer inputBuffer) inputBuffer {
 		fmt.Println("Error reading input")
 		os.Exit(1)
 	}
+	inputBuffer.bufferLength = len(inputBuffer.buffer)
 	inputBuffer.inputLength = bytesRead - 1
 
 	return inputBuffer
