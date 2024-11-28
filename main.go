@@ -20,6 +20,7 @@ const (
 const (
 	prepareSuccess prepareResults = iota
 	prepareUnrecognised
+	prepareSyntaxError
 )
 
 const (
@@ -33,8 +34,15 @@ type inputBuffer struct {
 	inputLength  int
 }
 
+type row struct {
+	id       uint
+	username string
+	email    string
+}
+
 type statement struct {
 	stype statementType
+	row   row
 }
 
 func doMetaCommands(inputBuffer inputBuffer) metaCommandResults {
@@ -50,6 +58,14 @@ func doMetaCommands(inputBuffer inputBuffer) metaCommandResults {
 
 func prepareStatements(inputBuffer inputBuffer, statement *statement) prepareResults {
 	if strings.Split(inputBuffer.buffer, " ")[0] == "insert" {
+		argsAssigned, err := fmt.Sscanf(inputBuffer.buffer, "insert %v %s %s", &statement.row.id, &statement.row.username, &statement.row.email)
+		if err != nil {
+			fmt.Println("error parsing insert statement")
+			fmt.Println(err.Error())
+		}
+		if argsAssigned > 3 {
+			return prepareSyntaxError
+		}
 		statement.stype = statementInsert
 		return prepareSuccess
 	}
@@ -109,7 +125,7 @@ func readConsole(inputBuffer inputBuffer) inputBuffer {
 
 func main() {
 	inputBuffer := createInputBuffer()
-	statement := statement{0}
+	statement := statement{0, row{0, "", ""}}
 	condition := true
 	for condition {
 		printConsole()
